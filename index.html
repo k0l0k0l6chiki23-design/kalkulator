@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Калькулятор семейной ипотеки по условиям с 1 октября 2026: ставка по числу детей, лимиты, платёж на 15 лет и после.">
+<title>Калькулятор семейной ипотеки</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: две колонки — параметры слева, итог справа; на телефоне стопкой */
+:root{
+  --red:#C6291F; --blue:#102D87; --bg:#FBF9F6; --panel:#FFFFFF; --soft:#F3F5FA;
+  --ink:#12172B; --ink-soft:#565C74; --border:#E3E6EC; --ok:#1E7A4C; --warn:#B4520A; --warn-bg:#FFF4E8;
+  --blue-ink:#102D87; --chip-on:#102D87; --chip-on-ink:#FFFFFF;
+  --f-head:"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --red:#FF9186; --blue:#8FA6F0; --bg:#0E1120; --panel:#161A2E; --soft:#1C2140;
+  --ink:#ECEEF5; --ink-soft:#A3A9C2; --border:#2A3052; --ok:#5FD39A; --warn:#FFB869; --warn-bg:#2E2414;
+  --blue-ink:#B9C7F7; --chip-on:#8FA6F0; --chip-on-ink:#0E1120; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --red:#FF9186; --blue:#8FA6F0; --bg:#0E1120; --panel:#161A2E; --soft:#1C2140;
+  --ink:#ECEEF5; --ink-soft:#A3A9C2; --border:#2A3052; --ok:#5FD39A; --warn:#FFB869; --warn-bg:#2E2414;
+  --blue-ink:#B9C7F7; --chip-on:#8FA6F0; --chip-on-ink:#0E1120; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--f-body);padding:0 16px}
+.wrap{max-width:1080px;margin:0 auto;padding-block:32px 48px}
+.eyebrow{font:600 12px/1 var(--f-head);letter-spacing:.12em;text-transform:uppercase;color:var(--red);display:inline-block;padding-bottom:7px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='6' viewBox='0 0 16 6'%3E%3Cpath d='M0 3 Q4 0 8 3 T16 3' fill='none' stroke='%23C6291F' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x left bottom/16px 6px}
+h1{font:800 clamp(28px,4.4vw,42px)/1.1 var(--f-head);color:var(--blue-ink);margin:14px 0 10px;text-wrap:balance}
+.lead{color:var(--ink-soft);max-width:62ch;margin:0}
+.grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;margin-top:28px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:24px}
+.form{display:flex;flex-direction:column;gap:22px}
+.field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.label{font:600 13px/1.2 var(--f-head);color:var(--ink);display:flex;justify-content:space-between;gap:8px}
+.label small{font:400 13px var(--f-body);color:var(--ink-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{appearance:none;border:1px solid var(--border);background:var(--soft);color:var(--ink);font:500 14px/1 var(--f-body);padding:11px 14px;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s}
+.chip:hover{border-color:var(--blue)}
+.chip[aria-pressed="true"]{background:var(--chip-on);border-color:var(--chip-on);color:var(--chip-on-ink)}
+.chip:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.money{display:flex;align-items:center;background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:0 14px}
+.money input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:600 18px var(--f-head);padding:12px 0;font-variant-numeric:tabular-nums}
+.money input:focus{outline:none}.money:focus-within{border-color:var(--blue)}
+.money span{color:var(--ink-soft);font-weight:500}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:460px){.row2{grid-template-columns:1fr}}
+input[type=range]{width:100%;accent-color:var(--red)}
+.hint{font-size:13px;color:var(--ink-soft);margin:0}
+.res{display:flex;flex-direction:column;gap:18px}
+.rate-badge{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.rate-badge b{font:800 52px/1 var(--f-head);color:var(--red);font-variant-numeric:tabular-nums}
+.rate-badge span{color:var(--ink-soft);font-size:14px}
+.pay{font:800 clamp(30px,4vw,38px)/1.1 var(--f-head);color:var(--blue-ink);font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:1fr auto;gap:10px 16px;margin:0;font-variant-numeric:tabular-nums}
+.kv dt{color:var(--ink-soft)}.kv dd{margin:0;font-weight:600;text-align:right}
+.kv .sep{grid-column:1/-1;height:1px;background:var(--border)}
+.save{background:var(--soft);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.save b{font:700 20px var(--f-head);color:var(--ok);font-variant-numeric:tabular-nums}
+.alerts{display:flex;flex-direction:column;gap:10px}
+.alert{background:var(--warn-bg);color:var(--ink);border-left:3px solid var(--warn);border-radius:8px;padding:10px 12px;font-size:14px}
+.alert strong{color:var(--warn)}
+.phase{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--soft)}
+.phase i{display:block;height:100%}
+.legend{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink-soft);flex-wrap:wrap;margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:var(--c)}
+h2{font:700 20px/1.2 var(--f-head);color:var(--blue-ink);margin:0}
+.terms{margin-top:28px}
+.tbl-wrap{overflow-x:auto;margin-top:14px}
+table{border-collapse:collapse;width:100%;min-width:520px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);font-size:14px}
+th{font:600 12px var(--f-head);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+td.r{color:var(--red);font-weight:700}
+tr.cur td{background:var(--soft)}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:18px}
+.note{border-top:2px solid var(--border);padding-top:10px;font-size:14px;color:var(--ink-soft)}
+.note b{display:block;color:var(--ink);font-family:var(--f-head);font-weight:600;margin-bottom:4px}
+.foot{margin-top:28px;font-size:12.5px;color:var(--ink-soft);max-width:80ch}
+.cta{display:flex;flex-direction:column;gap:14px;background:var(--soft)}
+.cta-btns{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;font:600 15px/1 var(--f-head);padding:15px 20px;border-radius:12px;text-decoration:none;cursor:pointer;border:1px solid transparent;transition:transform .15s,background .15s}
+.btn-main{background:var(--red);color:#FFFFFF;flex:1 1 220px}
+.btn-main:hover{transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--blue-ink);border-color:var(--blue);flex:1 1 160px}
+.btn:focus-visible,.tg:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.tg{color:var(--blue-ink);font-size:14px;font-weight:500;text-decoration:none}
+.tg:hover{text-decoration:underline}
+#copySrc{width:100%;min-height:150px;font:13px var(--f-body);background:var(--panel);color:var(--ink);border:1px solid var(--border);border-radius:10px;padding:10px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-main{color:#0E1120}}
+:root[data-theme="dark"] .btn-main{color:#0E1120}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="eyebrow">Условия с 1 октября 2026</span>
+  <h1>Калькулятор семейной ипотеки</h1>
+  <p class="lead">Ставка теперь зависит от числа детей и региона. Укажите параметры и посмотрите платёж на льготный период и после него.</p>
+
+  <div class="grid">
+    <form class="card form" id="f" onsubmit="return false">
+      <div class="field">
+        <div class="label">Регион покупки</div>
+        <div class="chips" data-group="region">
+          <button type="button" class="chip" id="reg-r" data-v="regions" aria-pressed="true">Другие регионы</button>
+          <button type="button" class="chip" id="reg-m" data-v="msk" aria-pressed="false">Москва, СПб, МО, ЛО</button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="label">Детей в семье <small>хотя бы одному меньше 7 лет</small></div>
+        <div class="chips" data-group="kids">
+          <button type="button" class="chip" id="k1" data-v="1" aria-pressed="false">1</button>
+          <button type="button" class="chip" id="k2" data-v="2" aria-pressed="true">2</button>
+          <button type="button" class="chip" id="k3" data-v="3" aria-pressed="false">3</button>
+          <button type="button" class="chip" id="k4" data-v="4" aria-pressed="false">4</button>
+          <button type="button" class="chip" id="k5" data-v="5" aria-pressed="false">5 и больше</button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="label">Что покупаете</div>
+        <div class="chips" data-group="type">
+          <button type="button" class="chip" id="t-new" data-v="new" aria-pressed="true">Новостройка</button>
+          <button type="button" class="chip" id="t-sec" data-v="sec" aria-pressed="false">Вторичка</button>
+          <button type="button" class="chip" id="t-izhs" data-v="izhs" aria-pressed="false">Дом (ИЖС)</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="price">Стоимость жилья</label>
+        <div class="money"><input id="price" inputmode="numeric" value="7 500 000"><span>₽</span></div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label class="label" for="down">Первоначальный взнос <small id="downPct"></small></label>
+          <div class="money"><input id="down" inputmode="numeric" value="1 500 000"><span>₽</span></div>
+        </div>
+        <div class="field">
+          <label class="label" for="matcap">Маткапитал во взнос</label>
+          <div class="money"><input id="matcap" inputmode="numeric" value="0"><span>₽</span></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label" for="term">Срок кредита <small id="termV"></small></label>
+        <input type="range" id="term" min="5" max="30" step="1" value="25">
+      </div>
+      <div class="field">
+        <label class="label" for="market">Рыночная ставка после 15 лет <small id="marketV"></small></label>
+        <input type="range" id="market" min="8" max="25" step="0.5" value="16">
+        <p class="hint">Льготная ставка действует только первые 15 лет. Какой будет ставка дальше, заранее неизвестно, поэтому задайте её сами.</p>
+      </div>
+    </form>
+
+    <div class="res">
+      <div class="card" style="display:flex;flex-direction:column;gap:18px">
+        <div class="rate-badge"><b id="rate">8%</b><span id="rateNote">ставка на первые 15 лет</span></div>
+        <div>
+          <div class="hint">Ежемесячный платёж</div>
+          <div class="pay" id="pay1">—</div>
+          <div class="hint" id="pay2line"></div>
+        </div>
+        <div>
+          <div class="phase" id="phase"></div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <dl class="kv">
+          <dt>Сумма кредита</dt><dd id="loan">—</dd>
+          <dt>Лимит по программе</dt><dd id="limit">—</dd>
+          <dt>Взнос с маткапиталом</dt><dd id="downTotal">—</dd>
+          <div class="sep"></div>
+          <dt>Переплата по процентам</dt><dd id="over">—</dd>
+          <dt>Всего выплатите банку</dt><dd id="total">—</dd>
+          <dt>Доход семьи от</dt><dd id="income">—</dd>
+        </dl>
+        <div class="save"><span>Экономия против рыночной ставки на весь срок</span><b id="save">—</b></div>
+        <div class="alerts" id="alerts"></div>
+      </div>
+      <div class="card cta">
+        <h2>Разберём вашу ситуацию</h2>
+        <p class="hint">Подскажу, одобрят ли, какой банк выбрать и как использовать маткапитал. Нажмите кнопку, и ваш расчёт подставится в сообщение мне в Telegram. Если не подставился, скопируйте его второй кнопкой.</p>
+        <div class="cta-btns">
+          <a class="btn btn-main" id="ctaMain" href="https://t.me/sity_house" target="_blank" rel="noopener">Записаться на консультацию</a>
+          <button type="button" class="btn btn-ghost" id="copyBtn">Скопировать расчёт</button>
+        </div>
+        <textarea id="copySrc" readonly hidden></textarea>
+        <a class="tg" href="https://t.me/mama_4kids_v_nedvizhke" target="_blank" rel="noopener">Telegram-канал об ипотеке и пособиях →</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="card terms">
+    <h2>Ставки и лимиты с 1 октября 2026</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Детей</th><th>Ставка, регионы</th><th>Лимит, регионы</th><th>Ставка, Москва/СПб/МО/ЛО</th><th>Лимит, Москва/СПб/МО/ЛО</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="notes">
+      <div class="note"><b>Взнос от 20%</b>Маткапитал можно направить в первоначальный взнос.</div>
+      <div class="note"><b>Льгота на 15 лет</b>Дальше ставка становится рыночной, и платёж пересчитывается.</div>
+      <div class="note"><b>Дом (ИЖС)</b>Ставка 6% для всех семей, независимо от числа детей.</div>
+      <div class="note"><b>Вторичка</b>Только в городах из перечня ДОМ.РФ (892 города). Перечень обновляется 1 января и 1 июля.</div>
+    </div>
+  </section>
+
+  <p class="foot">Расчёт ориентировочный: аннуитетный платёж без учёта страховок и комиссий. Точные условия, лимиты и требования к заёмщикам уточняйте в банке. Доход оценён из расчёта, что платёж не превышает 50% дохода семьи.</p>
+</div>
+
+<script>
+const RATES={regions:[10,8,6,4,2],msk:[12,10,8,6,4]};
+const LIMITS={regions:[6e6,8e6,10e6,10e6,10e6],msk:[12e6,15e6,18e6,18e6,18e6]};
+const st={region:"regions",kids:2,type:"new"};
+const $=id=>document.getElementById(id);
+const fmt=n=>Math.round(n).toLocaleString("ru-RU")+" ₽";
+const fmtM=n=>(n/1e6).toLocaleString("ru-RU",{maximumFractionDigits:1})+" млн ₽";
+const num=el=>+String(el.value).replace(/[^\d]/g,"")||0;
+const pct=v=>String(v).replace(".",",")+"%";
+
+function annuity(L,yr,n){const r=yr/1200;if(n<=0||L<=0)return 0;return r===0?L/n:L*r/(1-Math.pow(1+r,-n));}
+function balanceAfter(L,yr,P,k){const r=yr/1200,q=Math.pow(1+r,k);return L*q-P*(q-1)/r;}
+
+function plural(n,a,b,c){const m=n%10,h=n%100;return m===1&&h!==11?a:(m>=2&&m<=4&&(h<12||h>14)?b:c);}
+
+function calc(){
+  const i=st.kids-1;
+  const rate=st.type==="izhs"?6:RATES[st.region][i];
+  const limit=LIMITS[st.region][i];
+  const price=num($("price")),down=num($("down")),mc=num($("matcap"));
+  const downTotal=down+mc;
+  const loan=Math.max(price-downTotal,0);
+  const years=+$("term").value,n=years*12,market=+$("market").value;
+  const lgN=Math.min(n,180);
+
+  const P1=annuity(loan,rate,n);
+  let P2=0,total=P1*lgN;
+  if(n>180){const B=balanceAfter(loan,rate,P1,180);P2=annuity(B,market,n-180);total+=P2*(n-180);}
+  const marketTotal=annuity(loan,market,n)*n;
+
+  $("rate").textContent=pct(rate);
+  $("rateNote").textContent=n>180?"ставка на первые 15 лет":"ставка на весь срок";
+  $("pay1").textContent=fmt(P1);
+  $("pay2line").textContent=n>180?`С 16-го года ≈ ${fmt(P2)} в месяц при ставке ${pct(market)}`:"Весь срок в пределах льготного периода";
+  $("loan").textContent=fmt(loan);
+  $("limit").textContent=fmtM(limit);
+  $("downTotal").textContent=fmt(downTotal);
+  $("over").textContent=fmt(total-loan);
+  $("total").textContent=fmt(total);
+  $("income").textContent=fmt(Math.max(P1,P2)*2);
+  $("save").textContent=fmt(Math.max(marketTotal-total,0));
+  $("termV").textContent=years+" "+plural(years,"год","года","лет");
+  $("marketV").textContent=pct(market);
+  $("downPct").textContent=price?Math.round(downTotal/price*100)+"% от стоимости":"";
+
+  const a=[];
+  if(price&&downTotal<price*0.2) a.push(`<strong>Взнос меньше 20%.</strong> Нужно минимум ${fmt(price*0.2)}, не хватает ${fmt(price*0.2-downTotal)}.`);
+  if(loan>limit) a.push(`<strong>Кредит больше лимита ${fmtM(limit)}.</strong> Чтобы уложиться, взнос должен быть от ${fmt(price-limit)}. Часть сверх лимита по льготной ставке не выдадут.`);
+  if(st.type==="sec") a.push(`<strong>Вторичка.</strong> Проверьте, что город есть в перечне ДОМ.РФ: иначе по семейной ипотеке купить не получится.`);
+  $("alerts").innerHTML=a.map(t=>`<div class="alert">${t}</div>`).join("");
+
+  const typeName={new:"новостройка",sec:"вторичка",izhs:"дом (ИЖС)"}[st.type];
+  $("copySrc").value=["Здравствуйте! Хочу консультацию по семейной ипотеке. Мой расчёт:",
+    `Регион: ${st.region==="msk"?"Москва/СПб/МО/ЛО":"другой регион"}, детей: ${st.kids===5?"5 и больше":st.kids}, ${typeName}`,
+    `Стоимость: ${fmt(price)}, взнос: ${fmt(downTotal)}${mc?` (из них маткапитал ${fmt(mc)})`:""}`,
+    `Кредит: ${fmt(loan)} на ${$("termV").textContent}, ставка ${pct(rate)}`,
+    `Платёж: ${fmt(P1)}${n>180?`, с 16-го года ≈ ${fmt(P2)}`:""}`].join("\n");
+  $("ctaMain").href="https://t.me/sity_house?text="+encodeURIComponent($("copySrc").value);
+
+  // фазы срока
+  const ph=$("phase"),lg=$("legend");
+  if(n>180){
+    const w=180/n*100;
+    ph.innerHTML=`<i style="width:${w}%;background:var(--red)"></i><i style="width:${100-w}%;background:var(--blue)"></i>`;
+    lg.innerHTML=`<span style="--c:var(--red)">15 лет · ${pct(rate)}</span><span style="--c:var(--blue)">${years-15} ${plural(years-15,"год","года","лет")} · ${pct(market)}</span>`;
+  }else{
+    ph.innerHTML=`<i style="width:100%;background:var(--red)"></i>`;
+    lg.innerHTML=`<span style="--c:var(--red)">${years} ${plural(years,"год","года","лет")} · ${pct(rate)}</span>`;
+  }
+
+  // таблица условий
+  const labels=["1","2","3","4","5 и больше"];
+  $("tbody").innerHTML=labels.map((l,j)=>`<tr class="${j===i?"cur":""}"><td>${l}</td><td class="r">${RATES.regions[j]}%</td><td>${fmtM(LIMITS.regions[j])}</td><td class="r">${RATES.msk[j]}%</td><td>${fmtM(LIMITS.msk[j])}</td></tr>`).join("");
+}
+
+document.querySelectorAll(".chips").forEach(g=>{
+  g.addEventListener("click",e=>{
+    const b=e.target.closest(".chip");if(!b)return;
+    g.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c===b?"true":"false"));
+    const k=g.dataset.group;st[k]=k==="kids"?+b.dataset.v:b.dataset.v;calc();
+  });
+});
+["price","down","matcap"].forEach(id=>{
+  const el=$(id);
+  el.addEventListener("input",()=>{
+    const pos=el.value.length-el.selectionStart;const v=num(el);
+    el.value=v?v.toLocaleString("ru-RU"):"";
+    const p=Math.max(el.value.length-pos,0);try{el.setSelectionRange(p,p)}catch(_){}
+    calc();
+  });
+});
+["term","market"].forEach(id=>$(id).addEventListener("input",calc));
+$("copyBtn").addEventListener("click",()=>{
+  const b=$("copyBtn"),src=$("copySrc"),done=t=>{b.textContent=t;setTimeout(()=>b.textContent="Скопировать расчёт",2500)};
+  const fallback=()=>{src.hidden=false;src.focus();src.select();done("Выделите и скопируйте текст ниже")};
+  try{navigator.clipboard.writeText(src.value).then(()=>done("Расчёт скопирован"),fallback)}catch(_){fallback()}
+});
+calc();
+</script>
+</body>
+</html>

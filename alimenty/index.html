@@ -165,7 +165,7 @@ function render(){
  else if(!selected)notice='Выберите регион из списка.';
  else if(!valid)notice='Число месяцев должно быть целым, от 0 до 12.';
  else if(!result)notice='В используемой общей таблице СФР нет данных для этого региона. Уточните порядок расчёта в СФР. Отсутствие показателя не означает нулевые алименты.';
- $('notice').textContent=notice;$('interpretation').hidden=!result;$('copy').disabled=!result;$('comparison').hidden=!result;
+ $('notice').textContent=notice;$('interpretation').hidden=!result;$('interpretation').textContent=state.year===2027?'Сумма для планирования при росте зарплаты на 12%. Официальный размер для подачи определит СФР по опубликованной базе.':'Эту сумму добавляют к другим доходам семьи. Это не размер пособия и не сумма, назначенная судом.';$('copy').disabled=!result;$('comparison').hidden=!result;
  $('comparison').querySelector('h2').textContent=state.year===2027?'Прогноз на 2027 год с ростом зарплаты +12%':'Сравнение для вашего региона';
  $('comparisonPeriod').textContent=`За ${months} мес.`;$('rows').replaceChildren();
  if(result)for(const k of [1,2,3]){const r=calculate(salary,k,months),tr=document.createElement('tr');if(k===state.kids)tr.className='cur';for(const text of [k===3?'Мама + 3 и более детей':`Мама + ${k} ${k===1?'ребёнок':'детей'}`,money(r.monthly),money(r.period)]){const td=document.createElement('td');td.textContent=text;tr.append(td);}$('rows').append(tr);}

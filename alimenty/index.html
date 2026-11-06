@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="description" content="Расчёт условных алиментов для единого пособия по регионам: мама и один, двое, трое и более детей. Суммы за месяц и расчётный период."><title>Калькулятор условных алиментов | Анастасия Котова</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: две колонки — параметры слева, итог справа; на телефоне стопкой */
+:root{
+  --red:#C6291F; --blue:#102D87; --bg:#FBF9F6; --panel:#FFFFFF; --soft:#F3F5FA;
+  --ink:#12172B; --ink-soft:#565C74; --border:#E3E6EC; --ok:#1E7A4C; --warn:#B4520A; --warn-bg:#FFF4E8;
+  --blue-ink:#102D87; --chip-on:#102D87; --chip-on-ink:#FFFFFF;
+  --f-head:"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --red:#FF9186; --blue:#8FA6F0; --bg:#0E1120; --panel:#161A2E; --soft:#1C2140;
+  --ink:#ECEEF5; --ink-soft:#A3A9C2; --border:#2A3052; --ok:#5FD39A; --warn:#FFB869; --warn-bg:#2E2414;
+  --blue-ink:#B9C7F7; --chip-on:#8FA6F0; --chip-on-ink:#0E1120; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --red:#FF9186; --blue:#8FA6F0; --bg:#0E1120; --panel:#161A2E; --soft:#1C2140;
+  --ink:#ECEEF5; --ink-soft:#A3A9C2; --border:#2A3052; --ok:#5FD39A; --warn:#FFB869; --warn-bg:#2E2414;
+  --blue-ink:#B9C7F7; --chip-on:#8FA6F0; --chip-on-ink:#0E1120; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--f-body);padding:0 16px}
+.wrap{max-width:1080px;margin:0 auto;padding-block:32px 48px}
+.eyebrow{font:600 12px/1 var(--f-head);letter-spacing:.12em;text-transform:uppercase;color:var(--red);display:inline-block;padding-bottom:7px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='6' viewBox='0 0 16 6'%3E%3Cpath d='M0 3 Q4 0 8 3 T16 3' fill='none' stroke='%23C6291F' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x left bottom/16px 6px}
+h1{font:800 clamp(28px,4.4vw,42px)/1.1 var(--f-head);color:var(--blue-ink);margin:14px 0 10px;text-wrap:balance}
+.lead{color:var(--ink-soft);max-width:62ch;margin:0}
+.grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;margin-top:28px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:24px}
+.form{display:flex;flex-direction:column;gap:22px}
+.field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.label{font:600 13px/1.2 var(--f-head);color:var(--ink);display:flex;justify-content:space-between;gap:8px}
+.label small{font:400 13px var(--f-body);color:var(--ink-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{appearance:none;border:1px solid var(--border);background:var(--soft);color:var(--ink);font:500 14px/1 var(--f-body);padding:11px 14px;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s}
+.chip:hover{border-color:var(--blue)}
+.chip[aria-pressed="true"]{background:var(--chip-on);border-color:var(--chip-on);color:var(--chip-on-ink)}
+.chip:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.money{display:flex;align-items:center;background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:0 14px}
+.money input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:600 18px var(--f-head);padding:12px 0;font-variant-numeric:tabular-nums}
+.money input:focus{outline:none}.money:focus-within{border-color:var(--blue)}
+.money span{color:var(--ink-soft);font-weight:500}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:460px){.row2{grid-template-columns:1fr}}
+input[type=range]{width:100%;accent-color:var(--red)}
+.hint{font-size:13px;color:var(--ink-soft);margin:0}
+.res{display:flex;flex-direction:column;gap:18px}
+.rate-badge{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.rate-badge b{font:800 52px/1 var(--f-head);color:var(--red);font-variant-numeric:tabular-nums}
+.rate-badge span{color:var(--ink-soft);font-size:14px}
+.pay{font:800 clamp(30px,4vw,38px)/1.1 var(--f-head);color:var(--blue-ink);font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:1fr auto;gap:10px 16px;margin:0;font-variant-numeric:tabular-nums}
+.kv dt{color:var(--ink-soft)}.kv dd{margin:0;font-weight:600;text-align:right}
+.kv .sep{grid-column:1/-1;height:1px;background:var(--border)}
+.save{background:var(--soft);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.save b{font:700 20px var(--f-head);color:var(--ok);font-variant-numeric:tabular-nums}
+.alerts{display:flex;flex-direction:column;gap:10px}
+.alert{background:var(--warn-bg);color:var(--ink);border-left:3px solid var(--warn);border-radius:8px;padding:10px 12px;font-size:14px}
+.alert strong{color:var(--warn)}
+.phase{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--soft)}
+.phase i{display:block;height:100%}
+.legend{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink-soft);flex-wrap:wrap;margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:var(--c)}
+h2{font:700 20px/1.2 var(--f-head);color:var(--blue-ink);margin:0}
+.terms{margin-top:28px}
+.tbl-wrap{overflow-x:auto;margin-top:14px}
+table{border-collapse:collapse;width:100%;min-width:520px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);font-size:14px}
+th{font:600 12px var(--f-head);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+td.r{color:var(--red);font-weight:700}
+tr.cur td{background:var(--soft)}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:18px}
+.note{border-top:2px solid var(--border);padding-top:10px;font-size:14px;color:var(--ink-soft)}
+.note b{display:block;color:var(--ink);font-family:var(--f-head);font-weight:600;margin-bottom:4px}
+.foot{margin-top:28px;font-size:12.5px;color:var(--ink-soft);max-width:80ch}
+.cta{display:flex;flex-direction:column;gap:14px;background:var(--soft)}
+.cta-btns{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;font:600 15px/1 var(--f-head);padding:15px 20px;border-radius:12px;text-decoration:none;cursor:pointer;border:1px solid transparent;transition:transform .15s,background .15s}
+.btn-main{background:var(--red);color:#FFFFFF;flex:1 1 220px}
+.btn-main:hover{transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--blue-ink);border-color:var(--blue);flex:1 1 160px}
+.btn:focus-visible,.tg:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.tg{color:var(--blue-ink);font-size:14px;font-weight:500;text-decoration:none}
+.tg:hover{text-decoration:underline}
+#copySrc{width:100%;min-height:150px;font:13px var(--f-body);background:var(--panel);color:var(--ink);border:1px solid var(--border);border-radius:10px;padding:10px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn-main{color:#0E1120}}
+:root[data-theme="dark"] .btn-main{color:#0E1120}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+
+select,input[type=search],input[type=number]{width:100%;min-width:0;background:var(--soft);color:var(--ink);border:1px solid var(--border);border-radius:12px;padding:13px;font:500 16px var(--f-body)}
+select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+select{min-height:50px}.kicker{font:600 13px var(--f-head);color:var(--red);margin-bottom:10px}.big{font:800 clamp(30px,4vw,44px)/1.2 var(--f-head);color:var(--blue-ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.subresult{font:700 25px var(--f-head);color:var(--red)}
+.result-card{display:flex;flex-direction:column;gap:20px}.divider{height:1px;background:var(--border)}.period{display:flex;justify-content:space-between;align-items:center;gap:16px}.period input{max-width:88px}.comparison{margin-top:24px}.comparison table{min-width:420px}.comparison th{text-transform:none;letter-spacing:0}.comparison tr.cur td{background:var(--soft);font-weight:700}.source{color:var(--blue-ink)}.status{min-height:20px}.brand{margin-top:28px;color:var(--blue-ink)}.brand b{display:block}.chip{min-height:44px}.muted{color:var(--ink-soft)}[hidden]{display:none!important}.field-error{color:var(--warn)}.smallprint{font-size:13px;line-height:1.6}.zero{font-size:26px}details{margin-top:22px}summary{cursor:pointer;font-weight:600}details p{color:var(--ink-soft)}
+@media(max-width:460px){.card{padding:20px}.wrap{padding-top:24px}.kv{grid-template-columns:1fr}.kv dd{text-align:left}.btn{width:100%}.big{font-size:32px}}
+</style></head><body><main class="wrap">
+<span class="eyebrow">Единое пособие • 2026 / 2027</span><h1>Калькулятор условных алиментов</h1><p class="lead">Сколько алиментов могут учесть в доход семьи при назначении единого пособия? Выберите регион и количество детей.</p>
+<div class="grid"><form class="card form" id="form" onsubmit="return false">
+<div class="field"><label class="label" for="year">Год подачи заявления</label><div class="chips" data-group="year"><button type="button" class="chip" data-v="2026" aria-pressed="true">2026</button><button type="button" class="chip" data-v="2027" aria-pressed="false">2027</button></div><p class="hint" id="yearHint"></p></div>
+<div class="field"><label class="label" for="search">Ваш регион</label><input type="search" id="search" placeholder="Поиск: Ставрополь, Москва…" autocomplete="off" aria-controls="region"><select id="region" aria-label="Выберите регион"></select><p id="searchStatus" class="hint" role="status"></p></div>
+<div class="field"><span class="label" id="kidsLabel">На сколько детей учитываются алименты?</span><div class="chips" role="group" aria-labelledby="kidsLabel" data-group="kids"><button type="button" class="chip" data-v="1" aria-pressed="true">1 ребёнок</button><button type="button" class="chip" data-v="2" aria-pressed="false">2 детей</button><button type="button" class="chip" data-v="3" aria-pressed="false">3 и более</button></div><p class="hint">Для трёх и более детей считается одна общая сумма на всех.</p></div>
+<div class="field"><label class="label" for="situation">Ваша ситуация</label><select id="situation"><option value="conditional">В разводе, нет решения суда / судебного приказа</option><option value="court">Есть решение суда или судебный приказ</option><option value="single">Я единственный родитель</option><option value="other">Другая ситуация</option></select></div>
+<div class="field" id="monthField"><label class="label" for="months">Месяцев учёта в расчётном периоде</label><div class="period"><input type="range" id="monthsRange" min="0" max="12" value="12" aria-label="Число месяцев учёта"><input type="number" id="months" min="0" max="12" step="1" value="12" inputmode="numeric"></div><p class="hint">Обычно 12. Если развод был в расчётном периоде, укажите число месяцев, за которые должны учитываться алименты. Даты и состав семьи могут потребовать индивидуального расчёта.</p><p class="hint field-error" id="monthError" role="alert" hidden>Укажите целое число от 0 до 12.</p></div>
+</form>
+<div class="res"><section class="card result-card" aria-label="Результат расчёта"><div><div class="kicker" id="family"></div><div class="hint">Условные алименты за месяц</div><div class="big" id="monthly" aria-live="polite"></div></div><div class="divider"></div><div><div class="hint" id="periodLabel">За 12 месяцев расчётного периода</div><div class="subresult" id="period"></div></div><dl class="kv" id="basis"><dt>Средняя зарплата региона</dt><dd id="salary"></dd><dt>Год данных о зарплате</dt><dd>2025</dd><dt>Доля на детей</dt><dd id="fraction"></dd></dl><div class="alert" id="notice" role="status"></div><p class="hint" id="interpretation">Эту сумму добавляют к другим доходам семьи. Это не размер пособия и не сумма, назначенная судом.</p></section>
+<section class="card cta"><h2>Проверьте доход до подачи</h2><p class="hint">Запишитесь на консультацию заранее, чтобы не потерять месяцы и не ждать отказа. Расчёт подставится в сообщение в Telegram.</p><div class="cta-btns"><a class="btn btn-main" id="consult" href="https://t.me/sity_house" target="_blank" rel="noopener">Записаться на консультацию</a><button type="button" class="btn btn-ghost" id="copy">Скопировать расчёт</button></div><p class="hint status" id="copyStatus" role="status"></p><textarea id="copySrc" readonly hidden aria-label="Текст расчёта для копирования"></textarea><a class="tg" href="https://t.me/mama_4kids_v_nedvizhke" target="_blank" rel="noopener">Telegram-канал о пособиях и недвижимости →</a></section></div></div>
+<section class="card comparison" id="comparison"><h2>Сравнение для вашего региона</h2><div class="tbl-wrap"><table><thead><tr><th scope="col">Состав семьи</th><th scope="col">За месяц</th><th scope="col" id="comparisonPeriod">За 12 месяцев</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+<details class="card"><summary>Как считается и когда применяется</summary><p>Для разведённого родителя без решения суда или судебного приказа минимальный учитываемый размер алиментов составляет ¼ средней зарплаты региона на одного ребёнка, ⅓ на двоих, ½ на троих и более. При нотариальном соглашении также проверяется минимальный порог. Если фактически полученные алименты больше, учитывается фактическая сумма.</p><p>При наличии решения суда или судебного приказа этот условный минимум не применяется. Единственному родителю условные алименты только из-за отсутствия второго родителя не начисляются.</p><p>Используется окончательная средняя зарплата за предыдущий год. Пока её нет, берётся год перед ним. Данные за 2026 год ещё не опубликованы: расчёт для начала 2027 года показан по базе 2025 года и действующим на дату проверки правилам. После публикации новой базы калькулятор потребуется обновить.</p><p>Раздел 2026 показывает текущий расчёт по базе 2025 года. Для заявлений в январе–феврале 2026 применялся МРОТ, в марте–мае использовалась зарплата за 2024 год. Эти исторические расчёты здесь не выполняются.</p><p>Сумма за период считается как точная доля средней зарплаты × число месяцев с округлением в конце до копеек. Поэтому она может на несколько копеек отличаться от умножения уже округлённой месячной суммы.</p><p>Архангельская и Тюменская области указаны без автономных округов. Для ДНР, ЛНР, Запорожской и Херсонской областей в используемой общей таблице СФР нет показателей: калькулятор не подменяет их нулём.</p></details>
+<p class="foot">База проверена 6 ноября 2026 года. <a class="source" href="https://sfr.gov.ru/grazhdanam/semyam_s_detmi/edinoe_posobie/ocenka/" target="_blank" rel="noopener">Источник: общая таблица и правила СФР</a>. Результат показывает условный минимум алиментов, а не право на единое пособие.</p><div class="brand"><b>Анастасия Котова</b><b>Юрист | Риелтор | Ипотечный брокер</b></div>
+<noscript><p class="alert">Для расчёта включите JavaScript в браузере.</p></noscript></main>
+<script>
+'use strict';
+const REGIONS=[["Алтайский край", 65568.5], ["Амурская область", 99044.4], ["Архангельская область", 92131.9], ["Астраханская область", 70487.4], ["Байконур", 101266.2], ["Белгородская область", 74886.6], ["Брянская область", 67049.4], ["Владимирская область", 74887.5], ["Волгоградская область", 69324.9], ["Вологодская область", 80996.7], ["Воронежская область", 75524.7], ["Донецкая Народная Республика", null], ["Еврейская автономная область", 92434.4], ["Забайкальский край", 101279.3], ["Запорожская область", null], ["Ивановская область", 58173.7], ["Иркутская область", 97366.3], ["Кабардино-Балкарская Республика", 53321.1], ["Калининградская область", 78252.3], ["Калужская область", 86134.2], ["Камчатский край", 152302.7], ["Карачаево-Черкесская Республика", 56074.4], ["Кемеровская область", 83970.2], ["Кировская область", 67550.3], ["Костромская область", 64837.3], ["Краснодарский край", 80517.6], ["Красноярский край", 106698], ["Курганская область", 73834.6], ["Курская область", 75782.6], ["Ленинградская область", 96716.3], ["Липецкая область", 77052.8], ["Луганская Народная Республика", null], ["Магаданская область", 181790.3], ["Москва", 181776.8], ["Московская область", 117139.2], ["Мурманская область", 126373.5], ["Ненецкий автономный округ", 147999.4], ["Нижегородская область", 81408.3], ["Новгородская область", 72709.5], ["Новосибирская область", 88683.7], ["Омская область", 74036.2], ["Оренбургская область", 75014.9], ["Орловская область", 64142.8], ["Пензенская область", 67385.8], ["Пермский край", 84931], ["Приморский край", 100836.4], ["Псковская область", 63662.1], ["Республика Адыгея", 65412.4], ["Республика Алтай", 75342.6], ["Республика Башкортостан", 74398.3], ["Республика Бурятия", 84440.6], ["Республика Дагестан", 50101.2], ["Республика Ингушетия", 44398.5], ["Республика Калмыкия", 56170.4], ["Республика Карелия", 82437.9], ["Республика Коми", 97935], ["Республика Крым", 65258.9], ["Республика Марий Эл", 71082.9], ["Республика Мордовия", 66836.8], ["Республика Саха (Якутия)", 141234.7], ["Республика Северная Осетия - Алания", 54071], ["Республика Татарстан", 91494.9], ["Республика Тыва", 75702.9], ["Республика Хакасия", 80491.8], ["Ростовская область", 71838.4], ["Рязанская область", 74524.8], ["Самарская область", 79036.3], ["Санкт-Петербург", 123341.4], ["Саратовская область", 67797.8], ["Сахалинская область", 147698], ["Свердловская область", 89675], ["Севастополь", 68083.9], ["Смоленская область", 70223.8], ["Ставропольский край", 66297.6], ["Тамбовская область", 63960.5], ["Тверская область", 73966.9], ["Томская область", 89519], ["Тульская область", 85812.2], ["Тюменская область", 94908.8], ["Удмуртская Республика", 80571], ["Ульяновская область", 70507.4], ["Хабаровский край", 101703.5], ["Ханты-Мансийский автономный округ - Югра", 137126.2], ["Херсонская область", null], ["Челябинская область", 81367.5], ["Чеченская Республика", 46403.5], ["Чувашская Республика", 68741.7], ["Чукотский автономный округ", 217181.9], ["Ямало-Ненецкий автономный округ", 177972.4], ["Ярославская область", 75143.4]];
+const $=id=>document.getElementById(id),state={year:2026,kids:1};
+const money=n=>n.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';
+function calculate(salary,kids,months){
+ if(!Number.isFinite(salary)||salary<=0)return null;
+ if(![1,2,3].includes(kids)||!Number.isInteger(months)||months<0||months>12)return null;
+ const denominator=kids===1?4:kids===2?3:2;
+ // Source values have at most two decimals. Integer arithmetic avoids binary rounding at half kopeck boundaries.
+ const kopecks=Math.round(salary*100);
+ return {monthly:Math.round(kopecks/denominator)/100,period:Math.round(kopecks*months/denominator)/100,denominator};
+}
+function fillRegions(){
+ const current=$('region').value,term=$('search').value.toLocaleLowerCase('ru-RU').replaceAll('ё','е').trim();
+ const filtered=REGIONS.filter(r=>r[0].toLocaleLowerCase('ru-RU').replaceAll('ё','е').includes(term));
+ $('region').replaceChildren();
+ for(const [n] of filtered){const o=document.createElement('option');o.value=n;o.textContent=n;$('region').append(o);}
+ if(filtered.some(r=>r[0]===current))$('region').value=current;
+ else if(!term&&filtered.some(r=>r[0]==='Ставропольский край'))$('region').value='Ставропольский край';
+ $('searchStatus').textContent=filtered.length?'':'Регион не найден. Измените запрос.';
+ render();
+}
+function render(){
+ const selected=REGIONS.find(r=>r[0]===$('region').value),months=Number($('months').value),valid=$('months').value!==''&&Number.isInteger(months)&&months>=0&&months<=12,situation=$('situation').value;
+ const active=situation==='conditional',salary=selected?.[1],result=valid&&selected&&active?calculate(salary,state.kids,months):null;
+ $('yearHint').textContent=state.year===2026?'Текущие суммы по окончательной зарплате за 2025 год.':'Пока нет окончательных данных за 2026 год, используется зарплата за 2025 год. Это расчёт для начала года по текущим правилам.';
+ $('monthError').hidden=valid;$('months').setAttribute('aria-invalid',String(!valid));
+ $('monthField').hidden=!active;
+ $('family').textContent=(selected?.[0]||'Выберите регион')+' • '+state.year;
+ $('periodLabel').textContent=valid?`За ${months} мес. расчётного периода`:'За расчётный период';
+ $('monthly').textContent=result?money(result.monthly):'Расчёт недоступен';
+ $('monthly').classList.toggle('zero',!result);$('period').textContent=result?money(result.period):'Нет расчёта';
+ $('basis').hidden=!result;$('salary').textContent=result?money(salary):'';$('fraction').textContent=result?'1/'+result.denominator:'';
+ let notice='Минимум для выбранного состава семьи. Если фактически получаете больше, в доход учтут фактическую сумму.';
+ if(situation==='court')notice='Есть судебное решение или судебный приказ: условный минимум не применяется. Учитываются фактически полученные алименты за расчётный период, в том числе по сведениям ФССП.';
+ else if(situation==='single')notice='Единственному родителю условные алименты только из-за отсутствия второго родителя не начисляются. Уточните, подтверждён ли статус единственного родителя.';
+ else if(situation==='other')notice='Для вашей ситуации нужно отдельно определить порядок учёта алиментов. Этот калькулятор рассчитывает минимум для родителя в разводе без решения суда / судебного приказа.';
+ else if(!selected)notice='Выберите регион из списка.';
+ else if(!valid)notice='Число месяцев должно быть целым, от 0 до 12.';
+ else if(!result)notice='В используемой общей таблице СФР нет данных для этого региона. Уточните порядок расчёта в СФР. Отсутствие показателя не означает нулевые алименты.';
+ $('notice').textContent=notice;$('interpretation').hidden=!result;$('copy').disabled=!result;$('comparison').hidden=!result;
+ $('comparisonPeriod').textContent=`За ${months} мес.`;$('rows').replaceChildren();
+ if(result)for(const k of [1,2,3]){const r=calculate(salary,k,months),tr=document.createElement('tr');if(k===state.kids)tr.className='cur';for(const text of [k===3?'Мама + 3 и более детей':`Мама + ${k} ${k===1?'ребёнок':'детей'}`,money(r.monthly),money(r.period)]){const td=document.createElement('td');td.textContent=text;tr.append(td);}$('rows').append(tr);}
+ const summary=result?['Здравствуйте! Хочу записаться на консультацию по единому пособию.',`Расчёт условных алиментов: ${selected[0]}, подача в ${state.year} году.`,`Мама + ${state.kids===3?'3 и более детей':state.kids===1?'1 ребёнок':'2 детей'}.`,`Условный минимум за месяц: ${money(result.monthly)}.`,`За ${months} мес.: ${money(result.period)}.`,`База: средняя зарплата за 2025 год, ${money(salary)}.`,state.year===2027?'Для начала 2027 года до публикации окончательных данных за 2026 год.':'Текущий расчёт после публикации окончательных данных за 2025 год.'].join('\n'):['Здравствуйте! Хочу консультацию по учёту алиментов для единого пособия.',selected?.[0]||'',notice].join('\n');
+ $('copySrc').value=summary;$('consult').href='https://t.me/sity_house?text='+encodeURIComponent(summary);$('copyStatus').textContent='';$('copySrc').hidden=true;
+}
+document.querySelectorAll('[data-group]').forEach(g=>g.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;state[g.dataset.group]=Number(b.dataset.v);g.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));render();}));
+$('search').addEventListener('input',fillRegions);$('region').addEventListener('change',render);$('situation').addEventListener('change',render);
+$('monthsRange').addEventListener('input',()=>{$('months').value=$('monthsRange').value;render();});
+$('months').addEventListener('input',()=>{const v=Number($('months').value);if($('months').value!==''&&Number.isInteger(v)&&v>=0&&v<=12)$('monthsRange').value=v;render();});
+$('copy').addEventListener('click',async()=>{const value=$('copySrc').value;try{await navigator.clipboard.writeText(value);$('copyStatus').textContent='Расчёт скопирован.';}catch{if($('copySrc').value!==value)return;$('copySrc').hidden=false;$('copySrc').focus();$('copySrc').select();$('copyStatus').textContent='Выделите и скопируйте текст ниже.';}});
+fillRegions();
+</script></body></html>

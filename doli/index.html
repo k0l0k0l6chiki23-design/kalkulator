@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Калькулятор долей по маткапиталу | Анастасия Котова</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: две колонки — параметры слева, итог справа; на телефоне стопкой */
+:root{
+  --red:#C6291F; --blue:#102D87; --bg:#FBF9F6; --panel:#FFFFFF; --soft:#F3F5FA;
+  --ink:#12172B; --ink-soft:#565C74; --border:#E3E6EC; --ok:#1E7A4C; --warn:#B4520A; --warn-bg:#FFF4E8;
+  --blue-ink:#102D87; --chip-on:#102D87; --chip-on-ink:#FFFFFF;
+  --f-head:"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --red:#FF9186; --blue:#8FA6F0; --bg:#0E1120; --panel:#161A2E; --soft:#1C2140;
+  --ink:#ECEEF5; --ink-soft:#A3A9C2; --border:#2A3052; --ok:#5FD39A; --warn:#FFB869; --warn-bg:#2E2414;
+  --blue-ink:#B9C7F7; --chip-on:#8FA6F0; --chip-on-ink:#0E1120; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --red:#FF9186; --blue:#8FA6F0; --bg:#0E1120; --panel:#161A2E; --soft:#1C2140;
+  --ink:#ECEEF5; --ink-soft:#A3A9C2; --border:#2A3052; --ok:#5FD39A; --warn:#FFB869; --warn-bg:#2E2414;
+  --blue-ink:#B9C7F7; --chip-on:#8FA6F0; --chip-on-ink:#0E1120; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--f-body);padding:0 16px}
+.wrap{max-width:1080px;margin:0 auto;padding-block:32px 48px}
+.eyebrow{font:600 12px/1 var(--f-head);letter-spacing:.12em;text-transform:uppercase;color:var(--red);display:inline-block;padding-bottom:7px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='6' viewBox='0 0 16 6'%3E%3Cpath d='M0 3 Q4 0 8 3 T16 3' fill='none' stroke='%23C6291F' stroke-width='1.6'/%3E%3C/svg%3E") repeat-x left bottom/16px 6px}
+h1{font:800 clamp(28px,4.4vw,42px)/1.1 var(--f-head);color:var(--blue-ink);margin:14px 0 10px;text-wrap:balance}
+.lead{color:var(--ink-soft);max-width:62ch;margin:0}
+.grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;margin-top:28px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:24px}
+.form{display:flex;flex-direction:column;gap:22px}
+.field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.label{font:600 13px/1.2 var(--f-head);color:var(--ink);display:flex;justify-content:space-between;gap:8px}
+.label small{font:400 13px var(--f-body);color:var(--ink-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{appearance:none;border:1px solid var(--border);background:var(--soft);color:var(--ink);font:500 14px/1 var(--f-body);padding:11px 14px;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s}
+.chip:hover{border-color:var(--blue)}
+.chip[aria-pressed="true"]{background:var(--chip-on);border-color:var(--chip-on);color:var(--chip-on-ink)}
+.chip:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.money{display:flex;align-items:center;background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:0 14px}
+.money input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:600 18px var(--f-head);padding:12px 0;font-variant-numeric:tabular-nums}
+.money input:focus{outline:none}.money:focus-within{border-color:var(--blue)}
+.money span{color:var(--ink-soft);font-weight:500}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:460px){.row2{grid-template-columns:1fr}}
+input[type=range]{width:100%;accent-color:var(--red)}
+.hint{font-size:13px;color:var(--ink-soft);margin:0}
+.res{display:flex;flex-direction:column;gap:18px}
+.rate-badge{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.rate-badge b{font:800 52px/1 var(--f-head);color:var(--red);font-variant-numeric:tabular-nums}
+.rate-badge span{color:var(--ink-soft);font-size:14px}
+.pay{font:800 clamp(30px,4vw,38px)/1.1 var(--f-head);color:var(--blue-ink);font-variant-numeric:tabular-nums}
+.kv{display:grid;grid-template-columns:1fr auto;gap:10px 16px;margin:0;font-variant-numeric:tabular-nums}
+.kv dt{color:var(--ink-soft)}.kv dd{margin:0;font-weight:600;text-align:right}
+.kv .sep{grid-column:1/-1;height:1px;background:var(--border)}
+.save{background:var(--soft);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.save b{font:700 20px var(--f-head);color:var(--ok);font-variant-numeric:tabular-nums}
+.alerts{display:flex;flex-direction:column;gap:10px}
+.alert{background:var(--warn-bg);color:var(--ink);border-left:3px solid var(--warn);border-radius:8px;padding:10px 12px;font-size:14px}
+.alert strong{color:var(--warn)}
+
+h2{font:700 21px var(--f-head);color:var(--blue-ink);margin:0} a{color:var(--blue-ink)}
+nav{margin-top:20px}nav a{text-decoration:none}button{background:var(--red);color:white;padding:13px;border:0;border-radius:12px;font:700 16px var(--f-body);cursor:pointer}
+.section{margin-top:24px}details{margin-top:12px;padding:12px 16px;background:var(--soft);border-radius:12px}summary{cursor:pointer;font-weight:700}
+li+li{margin-top:9px}footer{margin-top:25px;color:var(--blue-ink)}[hidden]{display:none!important}
+button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+#error{color:var(--warn);margin:0}.kv dd{overflow-wrap:anywhere}
+@media(max-width:460px){.card{padding:18px}}
+</style></head><body><main class="wrap">
+<header><span class="eyebrow">Маткапитал</span><h1>Калькулятор долей</h1><p class="lead">Посчитайте, какая доля жилья приходится на каждого участника за счёт материнского капитала.</p></header>
+<nav class="chips" aria-label="Разделы"><a class="chip" href="#calc">Рассчитать доли</a><a class="chip" href="#who">Кому выделять?</a><a class="chip" href="#memo">Памятка</a></nav>
+<div class="grid"><form id="calc" class="card form"><h2>Данные для расчёта</h2>
+<label class="field"><span class="label">Стоимость жилья по договору</span><span class="money"><input required name="price" inputmode="decimal" placeholder="5 000 000"><span>₽</span></span></label>
+<label class="field"><span class="label">Маткапитал, направленный на жильё</span><span class="money"><input required name="capital" inputmode="decimal" placeholder="600 000"><span>₽</span></span></label>
+<label class="field"><span class="label">Количество участников</span><span class="money"><input required name="people" inputmode="numeric" placeholder="3"></span></label>
+<p class="hint"><a href="#who">Не знаю, кого включить</a></p><button type="submit">Рассчитать</button><p role="alert" id="error"></p></form>
+<section class="card res" id="result" tabindex="-1" aria-live="polite"><h2>Ваш результат</h2><p class="hint" id="initial">Введите данные и нажмите «Рассчитать».</p>
+<div class="res" id="output" hidden><div class="rate-badge"><b data-value></b><span>доля жилья на одного участника</span></div>
+<dl class="kv"><dt>Доля на каждого</dt><dd data-value></dd><dt>Эквивалент от цены покупки</dt><dd data-value></dd><dt>Оплачено маткапиталом</dt><dd data-value></dd><dt>Оплачено другими средствами</dt><dd data-value></dd></dl>
+<p class="hint">Расчёт относится к части жилья, оплаченной маткапиталом. Права на остальную часть зависят от обстоятельств покупки и оплаты.</p></div></section></div>
+<section class="card section" id="who"><h2>Кому выделять доли?</h2><p>По общему правилу доли оформляют на владельца сертификата, его супруга и детей. В спорной ситуации сверяйте даты и документы до расчёта.</p><details><summary>Брак и развод</summary><ol start="1"><li>Супруги в браке, двое детей. Если все четверо входят в круг получателей, для расчёта берите 4.</li><li>Владелец сертификата без супруга, двое детей. При отсутствии других получателей для расчёта берите 3.</li><li>Квартира до брака, маткапитал направили на ипотеку в браке. Сверьте даты брака и распоряжения, а также сумму, которую перечислил СФР.</li><li>Развод до распоряжения. Проверьте даты использования средств и основания прав бывшего супруга на жильё.</li><li>Развод после перечисления. Проверьте, возникло ли право на долю в период брака и оформляли ли её.</li></ol></details>
+<details><summary>Дети и состав семьи</summary><ol start="6"><li>Сертификат возник на младшего. Проверьте права старших детей по ч. 4 ст. 10 Закона № 256-ФЗ.</li><li>Старший ребёнок достиг 18 лет. Проверьте, когда возникло его право и как он участвует в оформлении.</li><li>Ребёнок родился после использования средств. Сопоставьте даты рождения, перечисления и оформления долей.</li><li>Новый брак. Сопоставьте даты обоих браков, использования капитала и оформления жилья.</li><li>Усыновление или ребёнок от предыдущих отношений. Проверьте документы о родстве и усыновлении и состав семьи владельца сертификата.</li></ol></details>
+<details><summary>Жильё и документы</summary><ol start="11"><li>Ипотека ещё действует. Проверьте ЕГРН, основание залога и порядок оформления долей.</li><li>Покупка дома с участком. Проверьте цены дома и земли в договоре и назначение платежа СФР.</li><li>Доли уже оформили. Сверьте соглашение, выписку ЕГРН и фактически перечисленную сумму.</li><li>Продажа жилья с детской долей. Сначала уточните условия разрешения опеки по конкретной сделке.</li><li>Супруг умер до оформления. Проверьте основания прав на долю, наследственные документы и даты.</li></ol></details></section>
+<section class="card section" id="memo"><h2>Краткая памятка</h2><ul><li>Часть 4 статьи 10 Закона № 256-ФЗ определяет круг членов семьи. Размер долей закрепляют соглашением.</li><li>По подходу Верховного Суда доли за счёт маткапитала считают от оплаченной им части жилья.</li><li>Для продажи детской доли необходимо предварительное разрешение опеки.</li></ul>
+<p><a href="https://sfr.gov.ru/grazhdanam/semyam_s_detmi/materinskij_kapital/voprosy_o_poluchenii/~info3">Разъяснения СФР</a> · <a href="https://vsrf.ru/documents/all/15170/">Обзор Верховного Суда</a> · <a href="https://epp.genproc.gov.ru/ru/proc_64/activity/legal-education/explain/e679101/">Разъяснение об опеке</a></p></section>
+<footer><b>Анастасия Котова</b><br>Юрист | Риелтор | Ипотечный брокер</footer>
+</main><script>
+const form=document.getElementById('calc');
+const result=document.getElementById('result');
+const output=document.getElementById('output');
+const error=document.getElementById('error');
+function money(text) {
+  const value=text.replace(/\s/g,'').replace(',','.');
+  if (!/^[0-9]{1,12}(?:\.[0-9]{1,2})?$/.test(value)) throw Error('Введите суммы в рублях, при необходимости с копейками.');
+  const [rubles, cents='']=value.split('.');
+  return BigInt(rubles)*100n+BigInt(cents.padEnd(2,'0'));
+}
+function gcd(a,b) {
+  while (b) [a,b]=[b,a%b];
+  return a;
+}
+const number=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:4});
+const rubles=new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB'});
+function percent(a,b) {
+  const value=Number(a)/Number(b)*100;
+  return value>0&&value<0.0001?'менее 0,0001%':number.format(value)+'%';
+}
+function calculate(price,capital,count) {
+  if (price<=0n||capital<=0n||capital>price) throw Error('Укажите положительные суммы. Маткапитал не может превышать цену жилья.');
+  if (count<1n||count>999n) throw Error('Укажите число участников от 1 до 999.');
+  const denominator=price*count;
+  const common=gcd(capital,denominator);
+  const fraction=denominator===common?'1':capital/common+'/'+denominator/common;
+  return [percent(capital,denominator),fraction,rubles.format(Number(capital)/Number(count)/100),percent(capital,price),percent(price-capital,price)];
+}
+form.addEventListener('submit',event=>{
+  event.preventDefault();
+  try {
+    const count=form.elements.people.value.trim();
+    if (!/^[0-9]{1,3}$/.test(count)) throw Error('Введите целое число участников от 1 до 999.');
+    const values=calculate(money(form.elements.price.value),money(form.elements.capital.value),BigInt(count));
+    output.querySelectorAll('[data-value]').forEach((node,i)=>{node.textContent=values[i];});
+    output.hidden=false;
+    error.textContent='';
+    document.getElementById('initial').hidden=true;
+    result.focus();
+  } catch (problem) {
+    output.hidden=true;
+    error.textContent=problem.message;
+  }
+});
+form.addEventListener('input',()=>{
+  output.hidden=true;
+  error.textContent='';
+  document.getElementById('initial').hidden=false;
+});</script></body></html>

@@ -25,7 +25,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head>
 <body><main class="wrap">
-<header><span class="eyebrow">Единое пособие · правила дохода</span><h1>Калькулятор МРОТ по уважительным причинам</h1><p class="lead">Сколько нужно заработать с учётом месяцев уважительных причин в расчётном периоде? Посмотрите точную математическую формулу и сравните её со своим доходом.</p></header>
+<header><span class="eyebrow">Единое пособие · 2026 и сценарии 2027</span><h1>Калькулятор МРОТ по уважительным причинам</h1><p class="lead">Сколько нужно заработать с учётом месяцев уважительных причин в расчётном периоде? Посмотрите точную математическую формулу и сравните её со своим доходом.</p></header>
 <nav class="chips" aria-label="Другие калькуляторы">
 <a class="chip" href="../alimenty/">Условные алименты</a><a class="chip" href="../doli/">Доли по маткапиталу</a><a class="chip" href="../">Семейная ипотека</a>
 </nav>
@@ -33,7 +33,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 <form class="card form" id="form" onsubmit="return false">
 <h2>Ваши данные</h2>
 <div class="row2">
-<div class="field"><label class="label" for="year">Год подачи</label><select id="year"><option value="2027">2027 · проект</option><option value="2026">2026 · действует</option></select></div>
+<div class="field"><span class="label">Вариант расчёта</span><input type="hidden" id="year" value="2027-8"><div class="chips" id="scenarioChips" role="group" aria-label="Вариант расчёта"><button class="chip" type="button" data-scenario="2026-8" aria-pressed="false">2026 · 8 МРОТ</button><button class="chip" type="button" data-scenario="2027-8" aria-pressed="true">2027 · 8 МРОТ</button><button class="chip" type="button" data-scenario="2027-10" aria-pressed="false">2027 · 10 МРОТ</button></div><p class="hint">Для 2027 года можно сравнить оба сценария: 8 и 10 МРОТ.</p></div>
 <div class="field"><label class="label" for="mrot">МРОТ, ₽</label><input type="number" id="mrot" min="1" step="1" inputmode="numeric" value="28935"><p class="hint">При необходимости измените вручную.</p></div>
 </div>
 <div class="field"><label class="label" for="reason">Вид уважительной причины</label>
@@ -50,7 +50,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 <p class="hint">Указывайте суммарное число непересекающихся месяцев. Выбор причины не означает, что СФР автоматически засчитает её: у отдельных оснований действуют особые правила.</p></div>
 <div class="field"><label class="label" for="income">Учитываемый доход за расчётный период, ₽ <span class="hint">(необязательно)</span></label>
 <input type="number" id="income" min="0" step="0.01" inputmode="decimal" placeholder="Например, 200000"></div>
-<div class="note"><strong id="statusTitle">2027: проект</strong><div id="statusText">10 МРОТ и 28 935 ₽ приведены по проектам на 23.11.2026. До утверждения правил результат предварительный.</div></div>
+<div class="note"><strong id="statusTitle">2027 · сценарий 8 МРОТ</strong><div id="statusText">Предварительный расчёт на 2027 год при сохранении порога 8 МРОТ, с предполагаемым МРОТ 28 935 ₽.</div></div>
 </form>
 <section class="card result" aria-live="polite">
 <h2>Результат расчёта</h2>
@@ -90,13 +90,13 @@ const chips=el('monthChips');
 for(let i=0;i<=12;i++){const b=document.createElement('button');b.type='button';b.className='chip';b.dataset.m=String(i);b.setAttribute('aria-pressed',String(i===3));b.textContent=String(i);b.addEventListener('click',()=>{el('months').value=String(i);render()});chips.append(b)}
 let summary='';
 function render(){
-const year=el('year').value, n=Number(el('months').value),mrot=Number(el('mrot').value),k=year==='2027'?10:8;
+const scenario=el('year').value,year=scenario.slice(0,4),n=Number(el('months').value),mrot=Number(el('mrot').value),k=scenario.endsWith('-10')?10:8;
 const validMrot=Number.isFinite(mrot)&&mrot>0,full=validMrot?mrot*k:0,rem=Math.max(0,12-n),required=n>=10?0:full*rem/12;
 el('monthsValue').textContent=String(n);
 for(const b of chips.children)b.setAttribute('aria-pressed',String(Number(b.dataset.m)===n));
 el('reasonNote').textContent=tips[el('reason').value];
-el('statusTitle').textContent=year==='2027'?'2027: проект 10 МРОТ':'2026: правило 8 МРОТ';
-el('statusText').textContent=year==='2027'?'На 23.11.2026 повышение до 10 МРОТ и МРОТ 28 935 ₽ ещё не утверждены окончательно. Расчёт предварительный.':'В 2026 году 8 МРОТ при МРОТ 27 093 ₽. Проверяйте условия каждой уважительной причины.';
+el('statusTitle').textContent=scenario==='2027-10'?'2027: проект 10 МРОТ':scenario==='2027-8'?'2027: сценарий 8 МРОТ':'2026: правило 8 МРОТ';
+el('statusText').textContent=scenario==='2027-10'?'Предварительный расчёт на 2027 год по проектируемому порогу 10 МРОТ. МРОТ 28 935 ₽ также используется как прогнозное значение.':scenario==='2027-8'?'Сценарий на 2027 год при сохранении порога 8 МРОТ и предполагаемом МРОТ 28 935 ₽. Это вариант сравнения, а не утверждённое правило на 2027 год.':'Для 2026 года: 8 МРОТ и МРОТ 27 093 ₽. Проверяйте условия конкретной уважительной причины.';
 el('result').textContent=!validMrot?'Введите МРОТ':n>=10?'Не требуется':rub(required);
 el('resultHint').textContent=n>=10?'Только если СФР признает не менее 10 месяцев уважительных причин.':n+' мес. уважительных причин, '+rem+' мес. для расчёта.';
 el('full').textContent=validMrot?rub(full):'—';
@@ -105,10 +105,10 @@ el('workMonths').textContent=rem+' мес.';
 el('formula').innerHTML=!validMrot?'Введите положительный МРОТ.':n>=10?rub(mrot)+' × '+k+' = '+rub(full)+'<br><strong>10+ месяцев признанных причин: порог не применяется</strong>':rub(mrot)+' × '+k+' = '+rub(full)+'<br>'+rub(full)+' ÷ 12 = '+rub(full/12)+'<br>'+rub(full/12)+' × '+rem+' = <strong>'+rub(required)+'</strong>';
 const raw=el('income').value,compare=el('compare');compare.hidden=!validMrot||raw.trim()==='';
 if(!compare.hidden){const actual=Number(raw);compare.textContent=actual>=required?'Указанный доход достигает рассчитанного порога. Это не означает автоматическое право на пособие.':'До рассчитанного порога не хватает '+rub(required-actual)+'. Сначала проверьте признание причины и специальные исключения.'}
-summary='Здравствуйте! Хочу консультацию по единому пособию.\nГод подачи: '+year+'\nПричина: '+el('reason').selectedOptions[0].textContent+'\nМесяцев: '+n+'\nМРОТ: '+rub(mrot)+'\nМинимальный доход: '+(n>=10?'не требуется при признании причины':rub(required))+(raw.trim()? '\nМой доход: '+rub(Number(raw)):'')+'\nПредварительный расчёт, требует проверки оснований.';
+summary='Здравствуйте! Хочу консультацию по единому пособию.\nСценарий: '+year+' / '+k+' МРОТ\nПричина: '+el('reason').selectedOptions[0].textContent+'\nМесяцев: '+n+'\nМРОТ: '+rub(mrot)+'\nМинимальный доход: '+(n>=10?'не требуется при признании причины':rub(required))+(raw.trim()? '\nМой доход: '+rub(Number(raw)):'')+'\nПредварительный расчёт, требует проверки оснований.';
 el('consult').href='https://t.me/sity_house?text='+encodeURIComponent(summary);
 }
-el('year').addEventListener('change',()=>{el('mrot').value=el('year').value==='2027'?'28935':'27093';render()});
+el('scenarioChips').addEventListener('click',event=>{const btn=event.target.closest('[data-scenario]');if(!btn)return;const value=btn.dataset.scenario;el('year').value=value;el('mrot').value=value.startsWith('2027')?'28935':'27093';el('scenarioChips').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));render()});
 ['months','mrot','reason','income'].forEach(id=>el(id).addEventListener('input',render));
 el('copy').addEventListener('click',async()=>{
 try{await navigator.clipboard.writeText(summary);el('copied').textContent='Расчёт скопирован.'}catch(e){const t=el('copySource');t.hidden=false;t.value=summary;t.select();el('copied').textContent='Выделите текст ниже и скопируйте.'}

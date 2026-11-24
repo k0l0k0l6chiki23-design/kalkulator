@@ -36,6 +36,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 <div class="field"><span class="label">Вариант расчёта</span><input type="hidden" id="year" value="2027-8"><div class="chips" id="scenarioChips" role="group" aria-label="Вариант расчёта"><button class="chip" type="button" data-scenario="2026-8" aria-pressed="false">2026 · 8 МРОТ</button><button class="chip" type="button" data-scenario="2027-8" aria-pressed="true">2027 · 8 МРОТ</button><button class="chip" type="button" data-scenario="2027-10" aria-pressed="false">2027 · 10 МРОТ</button></div><p class="hint">Для 2027 года можно сравнить оба сценария: 8 и 10 МРОТ.</p></div>
 <div class="field"><label class="label" for="mrot">МРОТ, ₽</label><input type="number" id="mrot" min="1" step="1" inputmode="numeric" value="28935"><p class="hint">При необходимости измените вручную.</p></div>
 </div>
+<div class="field"><label class="label" for="filingMonth">Месяц подачи заявления</label><select id="filingMonth"><option value="1">Январь</option><option value="2">Февраль</option><option value="3">Март</option><option value="4">Апрель</option><option value="5">Май</option><option value="6">Июнь</option><option value="7">Июль</option><option value="8">Август</option><option value="9">Сентябрь</option><option value="10">Октябрь</option><option value="11">Ноябрь</option><option value="12">Декабрь</option></select><p class="hint">Выберите месяц, в котором планируете отправить заявление.</p></div><div class="note" aria-live="polite"><strong>Расчётный период:</strong><div id="periodText" style="font:700 18px var(--f-head);margin:6px 0;color:var(--ink)">Декабрь 2025 – ноябрь 2026</div><div class="hint" id="periodDetail">Учитываются доходы за 12 месяцев, предшествующих одному месяцу перед месяцем подачи.</div></div>
 <div class="field"><label class="label" for="reason">Вид уважительной причины</label>
 <select id="reason">
 <option value="care">Уход за ребёнком до 3 лет</option>
@@ -71,7 +72,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 <h2>Результат расчёта</h2>
 <div><div class="label">Необходимый доход</div><div class="big" id="result">217 012,50 ₽</div><p class="hint" id="resultHint"></p></div>
 <div class="separator"></div><div><h2>Как получилась сумма?</h2><div class="formula" id="formula" style="margin-top:14px"></div></div>
-<dl class="kv"><dt>Минимум без уважительных причин</dt><dd id="full"></dd>
+<dl class="kv"><dt>Расчётный период</dt><dd id="periodResult"></dd><dt>Минимум без уважительных причин</dt><dd id="full"></dd>
 <dt>Месяцев причины</dt><dd id="reasonMonths"></dd>
 <dt>Месяцев для расчёта</dt><dd id="workMonths"></dd></dl>
 <div class="note" id="compare" hidden></div>
@@ -111,6 +112,14 @@ const rub=n=>new Intl.NumberFormat('ru-RU',{minimumFractionDigits:2,maximumFract
 const chips=el('monthChips');
 for(let i=0;i<=12;i++){const b=document.createElement('button');b.type='button';b.className='chip';b.dataset.m=String(i);b.textContent=String(i);b.addEventListener('click',()=>{if(b.disabled)return;el('months').value=String(i);render()});chips.append(b)}
 let summary='';
+const MONTHS_RU=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+const MONTHS_GEN=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+function periodFor(year,month){
+  const start=new Date(year,month-14,1),end=new Date(year,month-3,1);
+  const label=d=>MONTHS_RU[d.getMonth()]+' '+d.getFullYear();
+  return {start,end,short:label(start)+' – '+label(end),
+    precise:'с 1 '+MONTHS_GEN[start.getMonth()]+' '+start.getFullYear()+' г. по '+new Date(end.getFullYear(),end.getMonth()+1,0).getDate()+' '+MONTHS_GEN[end.getMonth()]+' '+end.getFullYear()+' г.'};
+}
 function applyReason(){
 const reason=el('reason').value,rule=RULES[reason];
 el('months').max=String(rule.max);
@@ -125,7 +134,10 @@ el('specialHint').textContent=rule.only?'Здесь не требуется на
 render();
 }
 function render(){
-const reason=el('reason').value,rule=RULES[reason],scenario=el('year').value,year=scenario.slice(0,4),n=Number(el('months').value),mrot=Number(el('mrot').value),k=scenario.endsWith('-10')?10:8;
+const reason=el('reason').value,rule=RULES[reason],scenario=el('year').value,year=Number(scenario.slice(0,4)),filingMonth=Number(el('filingMonth').value),period=periodFor(year,filingMonth),n=Number(el('months').value),mrot=Number(el('mrot').value),k=scenario.endsWith('-10')?10:8;
+el('periodText').textContent=period.short;
+el('periodDetail').textContent=period.precise+' · Всего 12 месяцев. Месяц непосредственно перед подачей не входит.';
+el('periodResult').textContent=period.short;
 const max=rule.max;
 for(const b of chips.children){const m=Number(b.dataset.m);b.disabled=m>max||(rule.min&&m>0&&m<rule.min);b.style.opacity=b.disabled?'0.32':'1';b.setAttribute('aria-pressed',String(m===n))}
 el('monthsValue').textContent=String(n);
@@ -149,11 +161,12 @@ el('workMonths').textContent=rem+' мес.';
 el('formula').innerHTML=!validMrot?'Введите положительный МРОТ.':waiver?rub(mrot)+' × '+k+' = '+rub(full)+'<br><strong>'+(special?'Специальное освобождение при подтверждении условий':'10+ месяцев признанных причин: порог не применяется')+'</strong>':rub(mrot)+' × '+k+' = '+rub(full)+'<br>'+rub(full)+' ÷ 12 = '+rub(full/12)+'<br>'+rub(full/12)+' × '+rem+' = <strong>'+rub(required)+'</strong>';
 const raw=el('income').value,compare=el('compare');compare.hidden=!validMrot||raw.trim()==='';
 if(!compare.hidden){const actual=Number(raw);compare.textContent=actual>=required?'Указанный доход достигает рассчитанного порога, но это не гарантирует право на пособие.':'До рассчитанного порога не хватает '+rub(required-actual)+'. Проверьте признание причин и исключения.'}
-summary='Здравствуйте! Хочу консультацию по единому пособию.\nСценарий: '+year+' / '+k+' МРОТ\nПричина: '+el('reason').selectedOptions[0].textContent+'\nПодтверждаемые месяцы: '+count+'\nСпециальное условие подтверждено: '+(special?'да':'нет')+'\nМРОТ: '+rub(mrot)+'\nМинимальный доход: '+(waiver?'не требуется при подтверждении условий':rub(required))+(raw.trim()?'\nМой доход: '+rub(Number(raw)):'')+'\nПредварительный расчёт, требует проверки оснований.';
+summary='Здравствуйте! Хочу консультацию по единому пособию.\nСценарий: '+year+' / '+k+' МРОТ\nМесяц подачи: '+MONTHS_RU[filingMonth-1]+' '+year+'\nРасчётный период: '+period.precise+'\nПричина: '+el('reason').selectedOptions[0].textContent+'\nПодтверждаемые месяцы: '+count+'\nСпециальное условие подтверждено: '+(special?'да':'нет')+'\nМРОТ: '+rub(mrot)+'\nМинимальный доход: '+(waiver?'не требуется при подтверждении условий':rub(required))+(raw.trim()?'\nМой доход: '+rub(Number(raw)):'')+'\nПредварительный расчёт, требует проверки оснований.';
 el('consult').href='https://t.me/sity_house?text='+encodeURIComponent(summary);
 }
 el('scenarioChips').addEventListener('click',event=>{const btn=event.target.closest('[data-scenario]');if(!btn)return;const v=btn.dataset.scenario;el('year').value=v;el('mrot').value=v.startsWith('2027')?'28935':'27093';el('scenarioChips').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));render()});
 el('reason').addEventListener('change',applyReason);
+el('filingMonth').addEventListener('change',render);
 el('months').addEventListener('input',()=>{
 const rule=RULES[el('reason').value],v=Number(el('months').value);
 if(rule.min&&v>0&&v<rule.min)el('months').value=String(rule.min);

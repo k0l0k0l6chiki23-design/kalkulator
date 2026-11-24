@@ -41,13 +41,28 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 <option value="care">Уход за ребёнком до 3 лет</option>
 <option value="preg">Беременность</option><option value="multi">Многодетность</option>
 <option value="single">Единственный родитель</option><option value="education">Очное обучение</option>
-<option value="dependent">Уход за нетрудоспособным</option><option value="ill">Длительное лечение</option>
-<option value="unemp">Официальная безработица</option><option value="service">Военная служба</option>
-<option value="other">Другие или несколько причин</option>
+<option value="dependent">Уход за нетрудоспособным</option>
+<option value="disabledchild">Уход за ребёнком-инвалидом / инвалидом с детства I группы</option>
+<option value="ill">Непрерывное лечение от 3 месяцев</option>
+<option value="unemp">Официальная безработица (до 6 мес.)</option>
+<option value="service">Срочная служба и период после</option>
+<option value="detention">Лишение свободы / арест и период после</option>
+<option value="mobilized">Мобилизация (особый порядок)</option>
+<option value="pension">Получение пенсии</option>
+<option value="kmns">Коренные малочисленные народы</option>
+<option value="other">Несколько причин (ручной подсчёт)</option>
 </select><p class="hint" id="reasonNote"></p></div>
-<div class="field"><label class="label" for="months">Сколько месяцев подтверждённых причин?</label>
-<div class="row"><input id="months" type="range" min="0" max="12" step="1" value="3"><strong id="monthsValue" class="accent">3</strong></div><div class="chips" id="monthChips" aria-label="Месяцы уважительной причины"></div>
-<p class="hint">Указывайте суммарное число непересекающихся месяцев. Выбор причины не означает, что СФР автоматически засчитает её: у отдельных оснований действуют особые правила.</p></div>
+<div class="field"><label class="label" for="months" id="monthsLabel">Сколько месяцев подтверждённой причины?</label>
+<div class="row"><input id="months" type="range" min="0" max="12" step="1" value="3"><strong id="monthsValue" class="accent">3</strong></div>
+<div class="chips" id="monthChips" aria-label="Месяцы уважительной причины"></div>
+<p class="hint" id="limitHint">Укажите фактически подтверждённые месяцы в 12-месячном расчётном периоде.</p></div>
+<div class="field" id="afterField" hidden><label class="label" for="afterMonths">Дополнительные месяцы после службы / освобождения</label>
+<select id="afterMonths"><option value="0">0 месяцев</option><option value="1">1 месяц</option><option value="2">2 месяца</option><option value="3">3 месяца</option></select>
+<p class="hint">После срочной службы или освобождения учитывается не более 3 месяцев. Пересекающиеся месяцы нельзя учитывать дважды.</p></div>
+<div class="field" id="specialField" hidden><label class="label">Специальное освобождение от требования к минимальному доходу</label>
+<label style="display:flex;gap:12px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="specialConfirm" style="margin-top:5px;accent-color:var(--red);width:19px;height:19px;flex:none"><span id="specialLabel">Подтверждаю выполнение условий основания</span></label>
+<p class="hint" id="specialHint">Без подтверждения основания калькулятор не применяет автоматическое освобождение.</p></div>
+<div class="note" id="reasonAlert" hidden></div>
 <div class="field"><label class="label" for="income">Учитываемый доход за расчётный период, ₽ <span class="hint">(необязательно)</span></label>
 <input type="number" id="income" min="0" step="0.01" inputmode="decimal" placeholder="Например, 200000"></div>
 <div class="note"><strong id="statusTitle">2027 · сценарий 8 МРОТ</strong><div id="statusText">Предварительный расчёт на 2027 год при сохранении порога 8 МРОТ, с предполагаемым МРОТ 28 935 ₽.</div></div>
@@ -66,52 +81,87 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 </section></div>
 <section class="card section"><h2>Важные пояснения</h2>
 <p>Этот калькулятор проверяет <strong>только требование к минимальному доходу по МРОТ</strong>. Он не рассчитывает право на единое пособие в целом: имущество, среднедушевой доход, алименты, вклады и другие критерии оцениваются отдельно.</p>
-<p>При 10 и более месяцах <strong>признанных уважительных причин</strong> требование к минимальному доходу не применяется, но остальные условия сохраняются. Для беременности, статуса единственного родителя, многодетности и отдельных иных обстоятельств действуют особые правила.</p>
-<p>Официальные разъяснения: <a class="source" href="https://sfr.gov.ru/grazhdanam/semyam_s_detmi/edinoe_posobie/ocenka/" target="_blank" rel="noopener">оценка нуждаемости СФР</a>, <a class="source" href="https://mintrud.gov.ru/social/family/358" target="_blank" rel="noopener">разъяснение Минтруда о проекте на 2027 год</a>.</p>
+<p>При 10 и более месяцах <strong>признанных уважительных причин</strong> требование к минимальному доходу не применяется, но остальные условия сохраняются. Для беременности, статуса единственного родителя, многодетности, пенсии и отдельных иных обстоятельств действуют специальные исключения.</p>
+<p>Официальная безработица засчитывается <strong>не более 6 месяцев</strong>. Непрерывное лечение признаётся основанием при продолжительности <strong>от 3 месяцев</strong>. Для срочной службы и освобождения после заключения дополнительно учитывается <strong>до 3 месяцев</strong>. Объективные причины оцениваются совокупно без двойного счёта одних и тех же месяцев.</p>
+<p>При выборе «Несколько причин» калькулятор показывает <strong>только условный расчёт</strong> на основании введённого суммарного срока. Он не может проверить совпадение месяцев разных оснований. Для точного расчёта проверьте периоды отдельно.</p>
+<p>Основания и сроки сверены с <a class="source" href="https://sfr.gov.ru/grazhdanam/semyam_s_detmi/edinoe_posobie/ocenka/" target="_blank" rel="noopener">разъяснениями СФР</a> и <a class="source" href="https://mintrud.gov.ru/edinoe_posobie_dlya_detey/" target="_blank" rel="noopener">Минтрудом</a>. По действующему порядку применяются Правила, утверждённые постановлением Правительства РФ от 16.12.2022 № 2330.</p>
 </section>
 <footer class="foot"><strong>Анастасия Котова</strong><br>Юрист | Риелтор | Ипотечный брокер<br><a class="source" href="https://www.instagram.com/anastasia_kotova_/">@anastasia_kotova_</a></footer>
 </main><script>
 'use strict';
 const el=id=>document.getElementById(id);
-const tips={
-care:'Период ухода должен приходиться на расчётный период и подтверждаться. Если ребёнку исполнилось 3 года, посчитайте только месяцы до трёхлетия, которые СФР вправе зачесть.',
-preg:'Для беременности действуют специальные условия, включая срок беременности и срок на день подачи. Простая формула подходит не для всех случаев.',
-multi:'Для многодетных семей могут действовать специальные правила для одного из родителей. Уточняйте статус и периоды.',
-single:'Для единственного родителя действуют особые основания. Важны юридический статус и подтверждающие документы.',
-education:'Нужно учитывать возраст, очную форму и даты обучения.',
-dependent:'СФР проверяет основания ухода, степень нетрудоспособности и подтверждённое родство в предусмотренных случаях.',
-ill:'Длительное лечение должно соответствовать установленным срокам и подтверждаться документами.',
-unemp:'Официальная безработица засчитывается при регистрации в службе занятости и в пределах установленных ограничений.',
-service:'Для военной службы и периода после неё действуют специальные условия.',
-other:'Суммируйте только разные непересекающиеся месяцы и проверьте основания для каждого периода.'
+const RULES={
+care:{max:12,note:'Учитывают фактические месяцы ухода за ребёнком до достижения им 3 лет в расчётном периоде. Возраст ребёнка сам по себе не подтверждает, кто осуществлял уход.'},
+preg:{max:12,special:true,note:'Беременность от 6 месяцев в расчётном периоде или срок от 12 недель на день подачи: специальное освобождение от требования к минимальному доходу. При меньшем сроке подтвердите фактические месяцы и при необходимости другие основания.'},
+multi:{max:12,special:true,only:true,note:'Статус многодетной семьи в расчётном периоде ИЛИ на дату обращения. Полное освобождение возможно только для одного из родителей при соблюдении условий; второму родителю необходимо учитывать требования отдельно.'},
+single:{max:12,special:true,only:true,note:'Только юридически единственный родитель либо соответствующий единственный опекун. Развод или отсутствие алиментов сами по себе не создают такого статуса.'},
+education:{max:12,note:'Фактические месяцы очного обучения до 23 лет, попадающие в расчётный период. Проверьте дату исполнения 23 лет и документы об обучении.'},
+dependent:{max:12,note:'Фактический подтверждённый период ухода за нетрудоспособным, пожилым старше 80 лет или нуждающимся в уходе. С 21.07.2026 для ряда оснований ухода имеют значение родственные связи.'},
+disabledchild:{max:12,note:'Фактический уход за ребёнком-инвалидом младше 18 лет или инвалидом с детства I группы. Периоды и статус подтверждаются.'},
+ill:{max:12,min:3,note:'Основание признаётся при НЕПРЕРЫВНОМ лечении от 3 месяцев. Сюда относится и уход за ребёнком на таком лечении. Один или два месяца самостоятельно не соответствуют условию.'},
+unemp:{max:6,note:'Не более 6 месяцев официальной регистрации в статусе безработного в центре занятости за расчётный период. Если причина действовала дольше, всё равно засчитывается максимум 6 месяцев.'},
+service:{max:12,after:true,note:'Фактический период срочной службы плюс до 3 месяцев после демобилизации, только в пределах расчётного периода.'},
+detention:{max:12,after:true,note:'Период лишения свободы, содержания под стражей либо домашнего ареста, плюс до 3 месяцев после освобождения. Фактические периоды подтверждаются.'},
+mobilized:{max:12,special:true,only:true,note:'Для мобилизации действуют специальные правила, которые могут исключать применение требования к минимальному доходу. Требуется проверка статуса.'},
+pension:{max:12,special:true,only:true,note:'При получении пенсии по старости, инвалидности или потере кормильца действуют специальные исключения из правила минимального дохода.'},
+kmns:{max:12,special:true,only:true,note:'Специальное исключение при принадлежности к коренным малочисленным народам Севера, Сибири и Дальнего Востока и соблюдении установленных условий традиционного образа жизни и деятельности.'},
+other:{max:12,note:'Ручной ввод совокупности разных уважительных причин. Ограничение 6 месяцев по безработице и минимальные сроки для лечения применяются отдельно. Пересекающиеся периоды не суммируются. Проверка только вручную.'}
 };
 const rub=n=>new Intl.NumberFormat('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n)+' ₽';
 const chips=el('monthChips');
-for(let i=0;i<=12;i++){const b=document.createElement('button');b.type='button';b.className='chip';b.dataset.m=String(i);b.setAttribute('aria-pressed',String(i===3));b.textContent=String(i);b.addEventListener('click',()=>{el('months').value=String(i);render()});chips.append(b)}
+for(let i=0;i<=12;i++){const b=document.createElement('button');b.type='button';b.className='chip';b.dataset.m=String(i);b.textContent=String(i);b.addEventListener('click',()=>{if(b.disabled)return;el('months').value=String(i);render()});chips.append(b)}
 let summary='';
+function applyReason(){
+const reason=el('reason').value,rule=RULES[reason];
+el('months').max=String(rule.max);
+if(Number(el('months').value)>rule.max)el('months').value=String(rule.max);
+if(rule.min&&Number(el('months').value)>0&&Number(el('months').value)<rule.min)el('months').value=String(rule.min);
+el('monthsLabel').textContent=rule.after?'Месяцев службы / заключения в расчётном периоде':rule.only?'Месяцев действия статуса (справочно)':'Сколько месяцев подтверждённой причины?';
+el('afterField').hidden=!rule.after;
+el('specialField').hidden=!rule.special;
+el('specialConfirm').checked=false;
+el('specialLabel').textContent=reason==='preg'?'Подтверждаю: беременность ≥6 месяцев в расчётном периоде ИЛИ срок ≥12 недель при подаче':reason==='multi'?'Подтверждаю статус многодетной семьи и условия освобождения именно для этого родителя':reason==='single'?'Подтверждаю юридический статус единственного родителя / опекуна':reason==='pension'?'Подтверждаю получение соответствующей пенсии':reason==='kmns'?'Подтверждаю статус и соблюдение установленных условий традиционной деятельности':reason==='mobilized'?'Подтверждаю статус мобилизованного и применимость специальных правил':'Подтверждаю выполнение специальных условий';
+el('specialHint').textContent=rule.only?'Здесь не требуется набрать 10 месяцев. Освобождение действует при выполнении специальных юридических условий; калькулятор их не подтверждает.':'Не ставьте отметку, если специальное условие не подтверждено. Иначе будет рассчитан обычный пропорциональный порог.';
+render();
+}
 function render(){
-const scenario=el('year').value,year=scenario.slice(0,4),n=Number(el('months').value),mrot=Number(el('mrot').value),k=scenario.endsWith('-10')?10:8;
-const validMrot=Number.isFinite(mrot)&&mrot>0,full=validMrot?mrot*k:0,rem=Math.max(0,12-n),required=n>=10?0:full*rem/12;
+const reason=el('reason').value,rule=RULES[reason],scenario=el('year').value,year=scenario.slice(0,4),n=Number(el('months').value),mrot=Number(el('mrot').value),k=scenario.endsWith('-10')?10:8;
+const max=rule.max;
+for(const b of chips.children){const m=Number(b.dataset.m);b.disabled=m>max||(rule.min&&m>0&&m<rule.min);b.style.opacity=b.disabled?'0.32':'1';b.setAttribute('aria-pressed',String(m===n))}
 el('monthsValue').textContent=String(n);
-for(const b of chips.children)b.setAttribute('aria-pressed',String(Number(b.dataset.m)===n));
-el('reasonNote').textContent=tips[el('reason').value];
+el('reasonNote').textContent=rule.note;
+el('limitHint').textContent=rule.max===6?'По официальному правилу СФР учитывается максимум 6 месяцев безработицы. Для 10 месяцев нужны другие признанные причины.':rule.min?'Лечение должно быть непрерывным не менее 3 месяцев. Возможные значения: 0 или от 3 до 12.':rule.only?'Укажите фактический срок статуса для информации. Освобождение определяется отдельными условиями, а не только числом месяцев.':rule.after?'Укажите фактический период основания, затем отдельно дополнительные месяцы после окончания. Не допускается двойной счёт.':'Укажите подтверждённые месяцы в расчётном периоде. Срок может быть меньше календарного периода по фактическим обстоятельствам.';
+let after=rule.after?Number(el('afterMonths').value):0;
+const count=rule.after?Math.min(12,n+after):n;
+const special=rule.special&&el('specialConfirm').checked;
+const validMrot=Number.isFinite(mrot)&&mrot>0;
+const full=validMrot?mrot*k:0,rem=Math.max(0,12-count),waiver=special||count>=10;
+const required=waiver?0:full*rem/12;
 el('statusTitle').textContent=scenario==='2027-10'?'2027: проект 10 МРОТ':scenario==='2027-8'?'2027: сценарий 8 МРОТ':'2026: правило 8 МРОТ';
-el('statusText').textContent=scenario==='2027-10'?'Предварительный расчёт на 2027 год по проектируемому порогу 10 МРОТ. МРОТ 28 935 ₽ также используется как прогнозное значение.':scenario==='2027-8'?'Сценарий на 2027 год при сохранении порога 8 МРОТ и предполагаемом МРОТ 28 935 ₽. Это вариант сравнения, а не утверждённое правило на 2027 год.':'Для 2026 года: 8 МРОТ и МРОТ 27 093 ₽. Проверяйте условия конкретной уважительной причины.';
-el('result').textContent=!validMrot?'Введите МРОТ':n>=10?'Не требуется':rub(required);
-el('resultHint').textContent=n>=10?'Только если СФР признает не менее 10 месяцев уважительных причин.':n+' мес. уважительных причин, '+rem+' мес. для расчёта.';
+el('statusText').textContent=scenario==='2027-10'?'Предварительный сценарий на 2027 год с порогом 10 МРОТ. Не утверждённые окончательно условия требуют проверки.':scenario==='2027-8'?'Предварительный сценарий на 2027 год с сохранением порога 8 МРОТ. Это вариант сравнения, а не утверждённое правило.':'2026: правило 8 МРОТ. Проверяйте условия конкретной уважительной причины.';
+el('reasonAlert').hidden=false;
+el('reasonAlert').textContent=rule.only?(special?'Вы подтвердили специальное условие. Результат условный, юридический статус необходимо проверить документально.':'Внимание: для этого основания может действовать полное освобождение. Отметьте подтверждение специального условия, если оно действительно выполнено. Без отметки приведён только условный пропорциональный расчёт.'):reason==='ill'?'Для лечения засчитывается только подтверждённый непрерывный период длительностью от 3 месяцев.':reason==='other'?'Внимание: для сочетания оснований не проверяются ограничения каждого периода и пересечения между ними. Результат условный; требуется ручная проверка.':rule.after?'Дополнительный период после окончания основания ограничен 3 месяцами и не может пересекаться с основной частью.':reason==='preg'?'При беременности от 6 месяцев в расчётном периоде или от 12 недель на дату подачи возможно полное освобождение. Проверьте условие выше.':reason==='unemp'?'Безработица ограничена 6 месяцами. Даже при 12 месяцах статуса по этому основанию можно зачесть не более 6.': 'Сумма предварительная: СФР должен подтвердить право на зачёт указанных месяцев.';
+el('result').textContent=!validMrot?'Введите МРОТ':waiver?'Не требуется':rub(required);
+el('resultHint').textContent=special?'Результат при подтверждённом специальном освобождении, независимо от количества месяцев.':count>=10?'Только при признании СФР 10 или более непересекающихся месяцев.':count+' мес. учитываемых причин; '+rem+' мес. для расчёта дохода.';
 el('full').textContent=validMrot?rub(full):'—';
-el('reasonMonths').textContent=n+' мес.';
+el('reasonMonths').textContent=count+' мес.'+(rule.after&&after?' (включая '+after+' после)':'');
 el('workMonths').textContent=rem+' мес.';
-el('formula').innerHTML=!validMrot?'Введите положительный МРОТ.':n>=10?rub(mrot)+' × '+k+' = '+rub(full)+'<br><strong>10+ месяцев признанных причин: порог не применяется</strong>':rub(mrot)+' × '+k+' = '+rub(full)+'<br>'+rub(full)+' ÷ 12 = '+rub(full/12)+'<br>'+rub(full/12)+' × '+rem+' = <strong>'+rub(required)+'</strong>';
+el('formula').innerHTML=!validMrot?'Введите положительный МРОТ.':waiver?rub(mrot)+' × '+k+' = '+rub(full)+'<br><strong>'+(special?'Специальное освобождение при подтверждении условий':'10+ месяцев признанных причин: порог не применяется')+'</strong>':rub(mrot)+' × '+k+' = '+rub(full)+'<br>'+rub(full)+' ÷ 12 = '+rub(full/12)+'<br>'+rub(full/12)+' × '+rem+' = <strong>'+rub(required)+'</strong>';
 const raw=el('income').value,compare=el('compare');compare.hidden=!validMrot||raw.trim()==='';
-if(!compare.hidden){const actual=Number(raw);compare.textContent=actual>=required?'Указанный доход достигает рассчитанного порога. Это не означает автоматическое право на пособие.':'До рассчитанного порога не хватает '+rub(required-actual)+'. Сначала проверьте признание причины и специальные исключения.'}
-summary='Здравствуйте! Хочу консультацию по единому пособию.\nСценарий: '+year+' / '+k+' МРОТ\nПричина: '+el('reason').selectedOptions[0].textContent+'\nМесяцев: '+n+'\nМРОТ: '+rub(mrot)+'\nМинимальный доход: '+(n>=10?'не требуется при признании причины':rub(required))+(raw.trim()? '\nМой доход: '+rub(Number(raw)):'')+'\nПредварительный расчёт, требует проверки оснований.';
+if(!compare.hidden){const actual=Number(raw);compare.textContent=actual>=required?'Указанный доход достигает рассчитанного порога, но это не гарантирует право на пособие.':'До рассчитанного порога не хватает '+rub(required-actual)+'. Проверьте признание причин и исключения.'}
+summary='Здравствуйте! Хочу консультацию по единому пособию.\nСценарий: '+year+' / '+k+' МРОТ\nПричина: '+el('reason').selectedOptions[0].textContent+'\nПодтверждаемые месяцы: '+count+'\nСпециальное условие подтверждено: '+(special?'да':'нет')+'\nМРОТ: '+rub(mrot)+'\nМинимальный доход: '+(waiver?'не требуется при подтверждении условий':rub(required))+(raw.trim()?'\nМой доход: '+rub(Number(raw)):'')+'\nПредварительный расчёт, требует проверки оснований.';
 el('consult').href='https://t.me/sity_house?text='+encodeURIComponent(summary);
 }
-el('scenarioChips').addEventListener('click',event=>{const btn=event.target.closest('[data-scenario]');if(!btn)return;const value=btn.dataset.scenario;el('year').value=value;el('mrot').value=value.startsWith('2027')?'28935':'27093';el('scenarioChips').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));render()});
-['months','mrot','reason','income'].forEach(id=>el(id).addEventListener('input',render));
+el('scenarioChips').addEventListener('click',event=>{const btn=event.target.closest('[data-scenario]');if(!btn)return;const v=btn.dataset.scenario;el('year').value=v;el('mrot').value=v.startsWith('2027')?'28935':'27093';el('scenarioChips').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));render()});
+el('reason').addEventListener('change',applyReason);
+el('months').addEventListener('input',()=>{
+const rule=RULES[el('reason').value],v=Number(el('months').value);
+if(rule.min&&v>0&&v<rule.min)el('months').value=String(rule.min);
+render();
+});
+['mrot','income','afterMonths','specialConfirm'].forEach(id=>el(id).addEventListener('input',render));
 el('copy').addEventListener('click',async()=>{
 try{await navigator.clipboard.writeText(summary);el('copied').textContent='Расчёт скопирован.'}catch(e){const t=el('copySource');t.hidden=false;t.value=summary;t.select();el('copied').textContent='Выделите текст ниже и скопируйте.'}
 });
-render();
+applyReason();
 </script></body></html>
